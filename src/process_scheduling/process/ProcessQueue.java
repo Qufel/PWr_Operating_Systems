@@ -1,5 +1,6 @@
 package process_scheduling.process;
 
+import process_scheduling.SimulationData;
 import process_scheduling.algorithms.SchedulingAlgorithm;
 
 import java.util.ArrayList;
@@ -15,8 +16,6 @@ public class ProcessQueue {
      */
     private final ArrayList<Process> PROCESSES;
     private final SchedulingAlgorithm ALGORITHM;
-
-    private int processesCount;
 
     /**
      * Initializes a new {@link ProcessQueue} with an empty processes array.
@@ -38,9 +37,8 @@ public class ProcessQueue {
     /**
      * Adds a new {@link Process} to a queue and assigns a new PID to the added process. That means the process was registered by the queue and is now waiting for execution.
      * @param process a process that will be added to a queue
-     * @return {@code pid} a process ID of an added process
     */
-    public int addProcess(Process process) {
+    public void addProcess(Process process) {
 
         int newPid;
 
@@ -53,14 +51,15 @@ public class ProcessQueue {
         process.setPID(newPid);
 
         PROCESSES.add(process);
-        processesCount++;
 
         // After adding new process sort the queue
         this.sort();
 
-        ALGORITHM.getData().totalWaitingTime += getProcessWaitingTime(newPid);
+        float waitingTime = getProcessWaitingTime(newPid);
 
-        return newPid;
+        ALGORITHM.getData().totalWaitingTime += waitingTime;
+        ALGORITHM.getData().starvedProcesses += waitingTime > SimulationData.STARVATION_TIME ? 1 : 0;
+
     }
 
     protected void addProcessWithoutSorting(Process process) {
@@ -79,18 +78,20 @@ public class ProcessQueue {
     }
 
     /**
+     * @param index an index in queue
+     * @return {@link Process} {@code process} a process in queue of given index
+     */
+    public Process getProcessByIndex(int index) {
+        return PROCESSES.get(index);
+    }
+
+    /**
      * @return {@code true} if queue is empty
      */
     public boolean isEmpty() {
         return PROCESSES.isEmpty();
     }
 
-    /**
-     * Clears a process queue.
-     */
-    public void clear() {
-        PROCESSES.clear();
-    }
 
     /**
      * @param pid a pid of a process to be removed
@@ -126,9 +127,9 @@ public class ProcessQueue {
 
         int largestPID = PROCESSES.getFirst().getPID();
 
-        for (int i = 0; i < PROCESSES.size(); i++) {
-            if (PROCESSES.get(i).getPID() > largestPID)
-                largestPID = PROCESSES.get(i).getPID();
+        for (Process process : PROCESSES) {
+            if (process.getPID() > largestPID)
+                largestPID = process.getPID();
         }
 
         return largestPID;

@@ -91,12 +91,12 @@ public class Process {
 
         // Gets random priority of a process
         // TODO Make it able to choose what will be more common
-        int rPriotity = (int) r.nextInt(0, 3);
+        int rPriority = r.nextInt(0, 3);
 
         // Gets random time of a process from range [0.0, 20.0)
         float rTime = (float) Math.round(r.nextFloat(LOWER_TIME_BOUND, UPPER_TIME_BOUND) * 10) / 10;
 
-        return new Process(rPriotity, rTime);
+        return new Process(rPriority, rTime);
     }
 
     /**

@@ -6,8 +6,8 @@ import process_scheduling.process.ProcessQueue;
 
 public class SchedulingAlgorithm {
 
-    private ProcessQueue queue;
-    private SimulationData data;
+    protected ProcessQueue queue;
+    protected SimulationData data;
 
     /**
      * Process that is being currently executed by the processor.

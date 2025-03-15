@@ -1,6 +1,7 @@
 package process_scheduling;
 
 import process_scheduling.algorithms.FCFS;
+import process_scheduling.algorithms.RoundRobin;
 import process_scheduling.algorithms.SRTF;
 import process_scheduling.process.Process;
 
@@ -8,7 +9,7 @@ import java.util.Random;
 
 public class Main {
 
-    static final int PROCESS_SIZE = 1000;
+    static final int PROCESS_COUNT = 5000;
 
     /**
      * {@code Float} number representing how long each processor cycles takes time. Can be interpreted as a processor's "speed".
@@ -26,10 +27,19 @@ public class Main {
     static final int RANDOM_OFFSET = 0;
 
     static FCFS fcfs = new FCFS();
-    static int fcfsProcessesLeft = PROCESS_SIZE;
+    static int fcfsProcessesLeft = PROCESS_COUNT;
+    static int fcfsCycles = 0;
+    static boolean fcfsFinished = false;
 
     static SRTF srtf = new SRTF();
-    static int srtfProcessesLeft = PROCESS_SIZE;
+    static int srtfProcessesLeft = PROCESS_COUNT;
+    static int srtfCycles = 0;
+    static boolean srtfFinished = false;
+
+    static RoundRobin rr = new RoundRobin();
+    static int rrProcessesLeft = PROCESS_COUNT;
+    static int rrCycles = 0;
+    static boolean rrFinished = false;
 
     /**
      * An {@link Integer} value that tracks how many processor cycles have already passed.
@@ -39,15 +49,13 @@ public class Main {
     public static void main(String[] args) {
 
         // Main Loop
-        while ((fcfsProcessesLeft > 0 || !fcfs.getQueue().isEmpty()) && (srtfProcessesLeft > 0 || !srtf.getQueue().isEmpty())) {
+        while (!(fcfsFinished) || !(srtfFinished) || !(rrFinished) ) {
 
             // Randomly add process to each scheduling algorithm based on currentTime as seed
             if (shouldAddProcess(currentTime)) {
 
                 // Get a random process based on currentTime as seed
                 Process process = Process.randomProcess(currentTime + RANDOM_OFFSET);
-
-                //region If algorithms still have processes to be added, add them
 
                 if (fcfsProcessesLeft > 0) {
                     fcfs.getQueue().addProcess(process);
@@ -59,23 +67,53 @@ public class Main {
                     srtfProcessesLeft--;
                 }
 
-                //endregion
+                if (rrProcessesLeft > 0) {
+                    rr.getQueue().addProcess(process);
+                    rrProcessesLeft--;
+                }
 
             }
 
-            fcfs.run(DELTA);
-            srtf.run(DELTA);
+            if (!fcfsFinished)
+                fcfs.run(DELTA);
+
+            if (!srtfFinished)
+                srtf.run(DELTA);
+
+            if (!rrFinished)
+                rr.run(DELTA);
+
+            if (fcfsProcessesLeft == 0 && fcfs.getQueue().isEmpty() && !fcfsFinished) {
+                fcfsCycles = currentTime;
+                fcfsFinished = true;
+            }
+            if (srtfProcessesLeft == 0 && srtf.getQueue().isEmpty() && !srtfFinished) {
+                srtfCycles = currentTime;
+                srtfFinished = true;
+            }
+            if (rrProcessesLeft == 0 && rr.getQueue().isEmpty() && !rrFinished) {
+                rrCycles = currentTime;
+                rrFinished = true;
+            }
 
             currentTime++;
 
         }
 
-        System.out.println("FCFS average execution time: " + ( fcfs.getData().totalExecutionTime / PROCESS_SIZE ));
-        System.out.println("FCFS average waiting time: " + ( fcfs.getData().totalWaitingTime / PROCESS_SIZE ) );
-        System.out.println("=======================");
-        System.out.println("SRTF average execution time: " + ( srtf.getData().totalExecutionTime / PROCESS_SIZE ));
-        System.out.println("SRTF average waiting time: " + ( srtf.getData().totalWaitingTime / PROCESS_SIZE ) );
-        System.out.println("=======================");
+        System.out.println("===== FCFS =====");
+        System.out.println("Finished in " + fcfsCycles + " cycles.");
+        System.out.println("FCFS average execution time: " + ( fcfs.getData().totalExecutionTime / PROCESS_COUNT) );
+        System.out.println("FCFS average waiting time: " + ( fcfs.getData().totalWaitingTime / PROCESS_COUNT) );
+        System.out.println("===== SRTF =====");
+        System.out.println("Finished in " + srtfCycles + " cycles.");
+        System.out.println("SRTF average execution time: " + ( srtf.getData().totalExecutionTime / PROCESS_COUNT) );
+        System.out.println("SRTF average waiting time: " + ( srtf.getData().totalWaitingTime / PROCESS_COUNT) );
+        System.out.println("SRTF starving processes: " + srtf.getData().starvedProcesses);
+        System.out.println("===== Round Robin =====");
+        System.out.println("Finished in " + rrCycles + " cycles.");
+        System.out.println("RR average execution time: " + ( rr.getData().totalExecutionTime / PROCESS_COUNT) );
+        System.out.println("RR average waiting time: " + ( rr.getData().totalWaitingTime / PROCESS_COUNT) );
+        System.out.println("RR average processor access time: " + ( rr.getData().totalProcessorAccessTime / PROCESS_COUNT) );
     }
 
     /**

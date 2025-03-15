@@ -1,9 +1,6 @@
 package process_scheduling.algorithms;
 
-import process_scheduling.process.Process;
 import process_scheduling.process.ProcessQueue;
-
-import java.util.ArrayList;
 
 public class FCFS extends SchedulingAlgorithm {
 
@@ -24,14 +21,16 @@ public class FCFS extends SchedulingAlgorithm {
 
         // Check if any process is being currently being executed, if not assign first process from the queue
         if (current == null) {
-            current = getQueue().getAndRemoveProcess();
+            current = getQueue().getProcess();
         } else {
-            // Execute process
-            current.execute(delta);
 
             // Check if current process has finished, if so clear current process
             if (current.hasCompleted()) {
+                getQueue().removeProcess(current.getPID());
                 current = null;
+            } else {
+                // Execute process
+                current.execute(delta);
             }
 
         }

@@ -4,7 +4,6 @@ import process_scheduling.process.Process;
 import process_scheduling.process.ProcessQueue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 
 public class SRTF extends SchedulingAlgorithm {
@@ -26,14 +25,7 @@ public class SRTF extends SchedulingAlgorithm {
                 }
 
                 // Sort using Java Comparator
-                Comparator<Process> comparator = new Comparator<Process>() {
-
-                    @Override
-                    public int compare(Process p1, Process p2) {
-                        return (int) ( p1.getTimeLeft() - p2.getTimeLeft() );
-                    }
-
-                };
+                Comparator<Process> comparator = (p1, p2) -> Float.compare(p1.getTimeLeft(), p2.getTimeLeft());
 
                 array.sort(comparator);
 
@@ -55,10 +47,11 @@ public class SRTF extends SchedulingAlgorithm {
 
         current = getQueue().getProcess();
 
-        current.execute(delta);
-
         if (current.hasCompleted()) {
             getQueue().removeProcess(current.getPID());
+            current = null;
+        } else {
+            current.execute(delta);
         }
 
         getData().totalExecutionTime += delta;
