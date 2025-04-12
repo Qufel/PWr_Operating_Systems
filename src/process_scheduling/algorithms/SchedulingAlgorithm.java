@@ -4,11 +4,12 @@ import process_scheduling.SimulationData;
 import process_scheduling.process.Process;
 import process_scheduling.process.ProcessQueue;
 
-public class SchedulingAlgorithm {
+public abstract class SchedulingAlgorithm {
 
     protected ProcessQueue queue;
     protected SimulationData data;
 
+    protected int cycles = 0;
     /**
      * Process that is being currently executed by the processor.
      */
@@ -19,6 +20,13 @@ public class SchedulingAlgorithm {
      */
     public ProcessQueue getQueue() {
         return queue;
+    }
+
+    /**
+     * @return current cycle number
+     */
+    public int getCycles() {
+        return cycles;
     }
 
     /**
@@ -35,9 +43,20 @@ public class SchedulingAlgorithm {
         return data;
     }
 
+    public Process getCurrent() {
+        return current;
+    }
 
     public void run(float delta) {
+        cycles++;
 
+        if (getCycles() >= SimulationData.CYCLES_COUNT * (getData().processesFinishedInTime.size() + 1) && !finished()) {
+            getData().addProcessFinished();
+        }
+    }
+
+    public boolean finished() {
+        return current == null && getQueue().isEmpty();
     }
 
     /**
@@ -45,6 +64,11 @@ public class SchedulingAlgorithm {
      */
     public SchedulingAlgorithm() {
         data = new SimulationData();
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName();
     }
 
 }

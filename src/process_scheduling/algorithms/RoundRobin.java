@@ -29,31 +29,42 @@ public class RoundRobin extends SchedulingAlgorithm {
     @Override
     public void run(float delta) {
 
+        if (currentProcessIndex >= getQueue().getProcessCount()) {
+            currentProcessIndex = 0;
+        }
+
         current = getQueue().getProcessByIndex(currentProcessIndex);
 
+        if (current == null) {
+            return;
+        }
+
+        current.execute(delta);
+
         if (current.hasCompleted()) {
-            getQueue().removeProcess(current.getPID());
-            current = null;
+
+            getQueue().removeProcessByIndex(currentProcessIndex);
+
             frameTime = 0f;
             currentProcessIndex++;
-        } else {
-            current.execute(delta);
+
+            getData().switches++;
+            getData().processesFinished++;
+
         }
 
         frameTime += delta;
 
         if (frameTime >= QUANTA) {
+            currentProcessIndex++;
 
+            getData().switches++;
             getData().totalProcessorAccessTime += frameTime;
 
             frameTime = 0f;
-            currentProcessIndex++;
         }
 
-        if (currentProcessIndex >= getQueue().getProcessCount())
-            currentProcessIndex = 0;
-
-        getData().totalExecutionTime += delta;
+        super.run(delta);
 
     }
 

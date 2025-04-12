@@ -22,21 +22,21 @@ public class FCFS extends SchedulingAlgorithm {
         // Check if any process is being currently being executed, if not assign first process from the queue
         if (current == null) {
             current = getQueue().getProcess();
-        } else {
+        }
 
-            // Check if current process has finished, if so clear current process
-            if (current.hasCompleted()) {
-                getQueue().removeProcess(current.getPID());
-                current = null;
-            } else {
-                // Execute process
-                current.execute(delta);
-            }
+        current.execute(delta);
+
+        if (current.hasCompleted()) {
+
+            getQueue().removeProcess(current.getPID());
+            current = getQueue().getProcess();
+
+            getData().switches++;
+            getData().processesFinished++;
 
         }
 
-        getData().totalExecutionTime += delta;
-
+        super.run(delta);
     }
 
 }

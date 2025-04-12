@@ -14,7 +14,7 @@ public class ProcessQueue {
     /**
      * Processes in queue. {@code private} and {@code final} attributes ensure that it cannot be accessed or modified in any other way than through methods.
      */
-    private final ArrayList<Process> PROCESSES;
+    protected final ArrayList<Process> PROCESSES;
     private final SchedulingAlgorithm ALGORITHM;
 
     /**
@@ -58,6 +58,7 @@ public class ProcessQueue {
         float waitingTime = getProcessWaitingTime(newPid);
 
         ALGORITHM.getData().totalWaitingTime += waitingTime;
+        ALGORITHM.getData().totalExecutionTime += process.getTime();
         ALGORITHM.getData().starvedProcesses += waitingTime > SimulationData.STARVATION_TIME ? 1 : 0;
 
     }
@@ -72,7 +73,7 @@ public class ProcessQueue {
      */
     public Process getProcess() {
         if (PROCESSES.isEmpty())
-            return new Process(0,0f);
+            return null;
 
         return PROCESSES.getFirst();
     }
@@ -82,6 +83,7 @@ public class ProcessQueue {
      * @return {@link Process} {@code process} a process in queue of given index
      */
     public Process getProcessByIndex(int index) {
+        if (index >= PROCESSES.size() || index < 0) return null;
         return PROCESSES.get(index);
     }
 
@@ -92,6 +94,10 @@ public class ProcessQueue {
         return PROCESSES.isEmpty();
     }
 
+    /**
+     * Clears a list.
+     */
+    public void clear() { PROCESSES.clear(); }
 
     /**
      * @param pid a pid of a process to be removed
@@ -102,8 +108,25 @@ public class ProcessQueue {
         if (pid == -1)
             return null;
 
-        Predicate<Process> filter = process -> process.getPID() == pid;
-        int index = PROCESSES.indexOf(PROCESSES.stream().filter(filter).findFirst().get());
+        int i = 0;
+        while (i < PROCESSES.size()) {
+
+            if (PROCESSES.get(i).getPID() == pid) {
+                return PROCESSES.remove(i);
+            }
+
+            i++;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param index an index of element
+     * @return {@link Process} {@code process} a removed process
+     */
+    public Process removeProcessByIndex(int index) {
+        if (index >= PROCESSES.size() || index < 0) return null;
         return PROCESSES.remove(index);
     }
 
@@ -149,8 +172,16 @@ public class ProcessQueue {
      */
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     private float getProcessWaitingTime(int pid) {
-        Predicate<Process> filter = process -> process.getPID() == pid;
-        int index = PROCESSES.indexOf(PROCESSES.stream().filter(filter).findFirst().get());
+        int index = 0;
+
+        while (index < PROCESSES.size()) {
+            if (PROCESSES.get(index).getPID() == pid) {
+                break;
+            }
+            index++;
+        }
+
+        if (index == PROCESSES.size()) return -1;
 
         float waitingTime = 0;
 

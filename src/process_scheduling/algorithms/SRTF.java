@@ -15,24 +15,10 @@ public class SRTF extends SchedulingAlgorithm {
             @Override
             public void sort() {
 
-                ArrayList<Process> array = new ArrayList<>();
-
-                // Add all processes to temporal array
-                Process p = getAndRemoveProcess();
-                while (p != null) {
-                    array.add(p);
-                    p = getAndRemoveProcess();
-                }
-
                 // Sort using Java Comparator
                 Comparator<Process> comparator = (p1, p2) -> Float.compare(p1.getTimeLeft(), p2.getTimeLeft());
 
-                array.sort(comparator);
-
-                // Add sorted processes to main queue
-                for (Process process : array) {
-                    addProcessWithoutSorting(process);
-                }
+                PROCESSES.sort(comparator);
 
             }
 
@@ -42,20 +28,25 @@ public class SRTF extends SchedulingAlgorithm {
     @Override
     public void run(float delta) {
 
-        if (getQueue().isEmpty())
+        if (getQueue().isEmpty()) {
+            super.run(delta);
             return;
+        }
 
         current = getQueue().getProcess();
 
+        current.execute(delta);
+
         if (current.hasCompleted()) {
             getQueue().removeProcess(current.getPID());
+
+            getData().switches++;
+            getData().processesFinished++;
+
             current = null;
-        } else {
-            current.execute(delta);
         }
 
-        getData().totalExecutionTime += delta;
-
+        super.run(delta);
     }
 
 }

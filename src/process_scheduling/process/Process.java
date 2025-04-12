@@ -19,8 +19,6 @@ public class Process {
 
     float waitingTime;
 
-    boolean done = false;
-
     /**
      * Creates a new {@link Process}. This constructor sets its priority and time.
      * @param priority a priority of a process from 0 {@code high} to 2 {@code low}
@@ -34,10 +32,6 @@ public class Process {
 
     public void execute(float delta) {
         timeLeft -= delta;
-
-        if (timeLeft <= 0) {
-            done = true;
-        }
     }
 
     /**
@@ -79,7 +73,7 @@ public class Process {
      * @return {@code done} a boolean value indicating if process has finished
      */
     public boolean hasCompleted() {
-        return done;
+        return timeLeft <= 0;
     }
 
     /**
@@ -93,7 +87,7 @@ public class Process {
         // TODO Make it able to choose what will be more common
         int rPriority = r.nextInt(0, 3);
 
-        // Gets random time of a process from range [0.0, 20.0)
+        // Gets random time of a process from range [1.0, 20.0)
         float rTime = (float) Math.round(r.nextFloat(LOWER_TIME_BOUND, UPPER_TIME_BOUND) * 10) / 10;
 
         return new Process(rPriority, rTime);
