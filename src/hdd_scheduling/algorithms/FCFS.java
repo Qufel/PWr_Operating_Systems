@@ -21,9 +21,7 @@ public class FCFS extends SchedulingAlgorithm {
      * @param seed a seed for RNG
      * @param count a count of requests to be done
      */
-    public void run(int seed, int count, boolean generateRealTime) {
-
-        System.out.println("Starting FCFS algorithm");
+    public void run(int seed, int count) {
 
         this.reset();
 
@@ -39,7 +37,7 @@ public class FCFS extends SchedulingAlgorithm {
             }
 
             // Chance for a new random request to be queued before each head jump
-            offsetSeed = this.queueRandomRequest(offsetSeed, count);
+            offsetSeed = this.queueRandomRequest(offsetSeed, count, false);
 
             if (current == null)
                 continue;

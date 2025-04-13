@@ -2,6 +2,7 @@ package hdd_scheduling.algorithms;
 
 import hdd_scheduling.Main;
 import hdd_scheduling.data.Data;
+import hdd_scheduling.requests.RealtimeRequest;
 import hdd_scheduling.requests.Request;
 import hdd_scheduling.requests.RequestQueue;
 
@@ -36,16 +37,30 @@ public abstract class SchedulingAlgorithm {
      * @param max a max count of request to be processed by this algorithm
      * @return {@code int} {@code seed} an incremented seed value
      */
-    protected int queueRandomRequest(int seed, int max) {
-        Random random = new Random();
+    protected int queueRandomRequest(int seed, int max, boolean generateRealTime) {
+        Random random = new Random(seed);
 
         float p = random.nextFloat();
 
         // If p exceeds threshold and there are still requests to be generated, add a new request
         if (p >= Main.REQUEST_THRESHOLD && this.data.requestsCreated < max) {
-            // Generate request
 
-            Request r = Request.generateRequest(seed, false);
+            // Generate request
+            Request r;
+
+            if (generateRealTime) {
+
+                float rt = random.nextFloat();
+
+                if (rt >= Main.REALTIME_THRESHOLD) {
+                    r = RealtimeRequest.generateRequest(seed);
+                } else {
+                    r = Request.generateRequest(seed);
+                }
+
+            } else {
+                r = Request.generateRequest(seed);
+            }
 
             this.addRequest(r);
 
@@ -62,11 +77,19 @@ public abstract class SchedulingAlgorithm {
      */
     public void addRequest(Request request) {
         // Rise flag
-        if (request.isRealTime() && !hasRealTime)
+        if (request instanceof RealtimeRequest)
             hasRealTime = true;
 
         request.setAddTime(this.data.headJumps);
         this.queue.add(request);
+    }
+
+    protected boolean checkForRealTime() {
+        for (Request r : getRequests()) {
+            if (r instanceof RealtimeRequest) return true;
+        }
+        hasRealTime = false;
+        return false;
     }
 
     /**

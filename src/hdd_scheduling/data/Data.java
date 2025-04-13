@@ -9,17 +9,20 @@ public class Data {
     public ArrayList<Integer> requestsPositions = new ArrayList<>();
 
     public int starvingRequests = 0;
+    public float requestsWaitTime = 0f;
 
     public int headJumps = 0;
 
     // C-Scan only
     public int returnsAmount = 0;
 
+    // Real Time only
+    public int realTimeRequestsCreated = 0;
+    public int realTimeRequestsDone = 0;
+
     public Data() {
 
     }
-
-    public float requestsWaitTime = 0f;
 
     public void addWaitTime(int time) {
         if (requestsDone == 0)

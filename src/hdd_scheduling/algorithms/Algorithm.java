@@ -5,6 +5,6 @@ public enum Algorithm {
     SSTF,
     SCAN,
     CSCAN,
-    EDF,
-    FDSCAN
+    EDF_SSTF,
+    FDSCAN_SSTF
 }

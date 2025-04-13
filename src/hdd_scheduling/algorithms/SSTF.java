@@ -4,7 +4,6 @@ import hdd_scheduling.requests.Request;
 
 public class SSTF extends SchedulingAlgorithm {
 
-
     public SSTF() {
         super();
     }
@@ -14,9 +13,7 @@ public class SSTF extends SchedulingAlgorithm {
      * @param seed a seed for RNG
      * @param count a count of requests to be done
      */
-    public void run(int seed, int count, boolean generateRealTime) {
-
-        System.out.println("Starting SSTF algorithm");
+    public void run(int seed, int count) {
 
         this.reset();
 
@@ -32,7 +29,7 @@ public class SSTF extends SchedulingAlgorithm {
             }
 
             // Chance for a new random request to be queued before each head jump
-            offsetSeed = this.queueRandomRequest(offsetSeed, count);
+            offsetSeed = this.queueRandomRequest(offsetSeed, count, false);
 
             if (current == null)
                 continue;
@@ -54,7 +51,7 @@ public class SSTF extends SchedulingAlgorithm {
      * Searches for request that has the smallest distance to head position.
      * @return {@link Request} {@code request} a request of smallest distance to head
      */
-    private Request getClosestRequest() {
+    protected Request getClosestRequest() {
 
         int distance = Integer.MAX_VALUE;
         Request request = null;

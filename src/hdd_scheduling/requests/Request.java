@@ -6,24 +6,18 @@ import java.util.Random;
 
 public class Request {
 
-    private int position;
-    private boolean isRealTime;
+    protected int position;
 
-    private int addedAt;
-    private int waitTime;
+    protected int addedAt;
+    protected int waitTime;
 
-    public Request(int position, boolean isRealTime) {
+    public Request(int position) {
         this.position = position;
-        this.isRealTime = isRealTime;
         this.waitTime = 0;
     }
 
     public int getPosition() {
         return position;
-    }
-
-    public boolean isRealTime() {
-        return isRealTime;
     }
 
     public int getWaitTime() {
@@ -44,7 +38,7 @@ public class Request {
 
     @Override
     public String toString() {
-        return "Position: " + position + " | RealTime: " + isRealTime;
+        return "Position: " + position;
     }
 
     @Override
@@ -53,7 +47,7 @@ public class Request {
         if (!(obj instanceof Request request)) return false;
         if (this == request) return true;
 
-        return this.position == request.position && this.isRealTime == request.isRealTime;
+        return this.position == request.position;
     }
 
     /**
@@ -62,11 +56,11 @@ public class Request {
      * @param isRealTime should request be considered a real time request or not
      * @return {@link Request} {@code request} a randomly generated request
      */
-    public static Request generateRequest(int seed, boolean isRealTime) {
+    public static Request generateRequest(int seed) {
         Random random = new Random(seed);
 
         int position = random.nextInt(1, Main.MAX + 1);
 
-        return new Request(position, isRealTime);
+        return new Request(position);
     }
 }

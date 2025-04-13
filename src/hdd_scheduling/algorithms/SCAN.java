@@ -19,9 +19,7 @@ public class SCAN extends SchedulingAlgorithm {
      * @param seed a seed for RNG
      * @param count a count of requests to be done
      */
-    public void run(int seed, int count, boolean generateRealTime) {
-
-        System.out.println("Starting SCAN algorithm");
+    public void run(int seed, int count) {
 
         this.reset();
 
@@ -32,7 +30,7 @@ public class SCAN extends SchedulingAlgorithm {
         while (this.data.requestsDone < count || !this.queue.isEmpty()) {
 
             // Chance for a new random request to be queued before each head jump
-            offsetSeed = this.queueRandomRequest(offsetSeed, count);
+            offsetSeed = this.queueRandomRequest(offsetSeed, count, false);
 
             // Get all requests that are on head
             ArrayList<Request> requestsOnHead = this.getRequestsOnPosition(head);
