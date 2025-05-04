@@ -1,3 +1,7 @@
+
+### HDD ###
+hdd_scheduling/data/result/*
+
 ### IntelliJ IDEA ###
 out/
 !**/src/main/**/out/
