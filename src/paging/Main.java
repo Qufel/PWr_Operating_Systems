@@ -2,6 +2,8 @@ package paging;
 
 import paging.process.Process;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Main {
@@ -20,15 +22,15 @@ public class Main {
     /**
      * At least how long a locality sequence chain should be.
      */
-    public static final int MIN_LOCALITY_CHAIN = 8;
+    public static final int MIN_LOCALITY_CHAIN = 16;
     /**
      * Max amount of localities.
      */
-    public static final int MAX_LOCALITIES = 2;
+    public static final int MAX_LOCALITIES = 4;
     /**
      * How deep should locality look for references to copy.
      */
-    public static final int LOCALITY_DEPTH = 16;
+    public static final int LOCALITY_DEPTH = 8;
     /**
      * How much references should be in a locality.
      */
@@ -36,8 +38,8 @@ public class Main {
 
     public static final int MAX_REFERENCE_ID = 64;
 
-    public static final int MIN_REFERENCE_COUNT = 16;
-    public static final int MAX_REFERENCE_COUNT = 64;
+    public static final int MIN_REFERENCE_COUNT = 64;
+    public static final int MAX_REFERENCE_COUNT = 128;
 
     public static void main(String[] args) {
         Random random = new Random();
