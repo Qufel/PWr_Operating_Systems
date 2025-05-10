@@ -3,16 +3,45 @@ package paging.process;
 import paging.Main;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.Random;
 
 public class Process {
 
     private final int id;
+    private final int[] pages;
     private final int[] sequence;
 
-    public Process(int id, int[] sequence) {
+    /**
+     * Which frames process is allowed to use.
+     */
+    private int[] frameRange;
+
+    /**
+     * How many page faults occurred during execution of this process.
+     */
+    private int pageFaults = 0;
+
+    /**
+     * How many times thrashing occurred.
+     */
+    private int thrashing = 0;
+
+    /**
+     * What page in sequence process should point to.
+     */
+    private int sequenceIndex = 0;
+
+    private final LinkedList<Boolean> pageFaultsStack;
+
+    public Process(int id, int[] pages, int[] sequence) {
         this.id = id;
+        this.pages = pages;
         this.sequence = sequence;
+
+        this.pageFaultsStack = new LinkedList<>();
+
+        this.frameRange = new int[] {0, Main.FRAMES - 1};
     }
 
     public int getId() {
@@ -23,21 +52,76 @@ public class Process {
         return sequence;
     }
 
-    public static Process generateProcess(int id, int seed) {
+    public int getLength() {
+        return sequence.length;
+    }
+
+    public boolean isFinished() {
+        return sequenceIndex == sequence.length;
+    }
+
+    public int getPage(int index) {
+        return sequence[index];
+    }
+
+    public int getNextPage() {
+        return sequence[sequenceIndex++];
+    }
+
+    public int getIndex() { return sequenceIndex; }
+
+    //region Allowed Frames
+
+    public int getFirstAllowedFrame() {
+        return frameRange[0];
+    }
+
+    public int getLastAllowedFrame() {
+        return frameRange[1];
+    }
+
+    public void setFirstAllowedFrame(int frame) {
+        frameRange[0] = frame;
+    }
+
+    public void setLastAllowedFrame(int frame) {
+        frameRange[1] = frame;
+    }
+
+    public void setAllowedFrameRange(int first, int last) {
+        frameRange[0] = first;
+        frameRange[1] = last;
+    }
+
+    //endregion
+
+    //region Process Generation
+
+    public static Process generateProcess(int id, int seed, int firstReference, int lastReference) {
         Random random = new Random(seed);
 
         boolean locality = false;
 
         // Create a new sequence
-        int length = random.nextInt(Main.MIN_REFERENCE_COUNT, Main.MAX_REFERENCE_COUNT + 1);
-        int[] sequence = new int[length];
+        int sequenceLength = random.nextInt(Main.MIN_REFERENCE_COUNT, Main.MAX_REFERENCE_COUNT + 1);
+        int pagesLength = lastReference - firstReference + 1;
+
+        int[] pages = new int[pagesLength];
+
+        for (int i = 0; i < pagesLength; i++) {
+            pages[i] = i + firstReference;
+        }
+
+        int[] sequence = new int[sequenceLength];
 
         int localityLength = 1;
         int localities = 0;
 
-        int[] localityReferences = new int[Main.LOCALITY_REFERENCES];
+        int localityStart;
 
-        for (int i = 0; i < length; i++) {
+        int[] localityReferences = new int[0];
+
+        for (int i = 0; i < sequenceLength; i++) {
 
             //region Locality Indication
 
@@ -51,12 +135,10 @@ public class Process {
             // Indicate if locality appeared
             if (!localityChange && locality) {
                 localities++;
-                localityReferences = getWeightedReferences(i, sequence);
-                System.out.println("Locality Start: " + i);
-            }
 
-            if (localityChange && !locality) {
-                System.out.println("Locality End: " + (i - 1));
+                localityStart = Math.max(Math.abs(random.nextInt() % (pagesLength)) - Main.LOCALITY_REFERENCES, 0);
+                localityReferences = new int[Main.LOCALITY_REFERENCES];
+                System.arraycopy(pages, localityStart, localityReferences, 0, Main.LOCALITY_REFERENCES);
             }
 
             //endregion
@@ -65,11 +147,11 @@ public class Process {
             if (locality) {
                 sequence[i] = localityReferences[Math.abs(random.nextInt()) % Main.LOCALITY_REFERENCES];
             } else
-                sequence[i] = random.nextInt(1, Main.MAX_REFERENCE_ID + 1);
+                sequence[i] = random.nextInt( ((id - 1) * Main.REFERENCES_WIDTH + 1), id * Main.REFERENCES_WIDTH + 1 );
 
         }
 
-        return new Process(id, sequence);
+        return new Process(id, pages, sequence);
     }
 
     private static boolean isLocality(boolean locality, float l, int localityLength, int localities, int i) {
@@ -119,9 +201,50 @@ public class Process {
         return result;
     }
 
+    //endregion
+
+    //region Page Faults
+
+    public int getPageFaults() {
+        return pageFaults;
+    }
+
+    public void updatePageFaults() {
+        pageFaults++;
+    }
+
+    //endregion
+
+    //region Thrashing
+
+    public boolean thrashing() {
+        int faults = 0;
+        for (Boolean fault : pageFaultsStack) {
+            if (fault) faults++;
+        }
+        return faults >= Main.THRASHING_THRESHOLD;
+    }
+
+    public void pushFaultState(boolean fault) {
+        pageFaultsStack.addLast(fault);
+        if (pageFaultsStack.size() > Main.THRASHING_CHECK_LENGTH)
+            pageFaultsStack.removeFirst();
+    }
+
+    public void updateThrashing() {
+        this.thrashing++;
+    }
+
+    public int getThrashing() {
+        return thrashing;
+    }
+
+    //endregion
+
     @Override
     public String toString() {
         return "Process ID: " + id + "\n" +
                 "Sequence: " + Arrays.toString(sequence) + "\n";
     }
+
 }
