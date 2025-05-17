@@ -5,8 +5,6 @@ import paging.process.Process;
 
 public class OPT extends PagingAlgorithm {
 
-    int index = 0;
-
     /**
      * Currently served page.
      */
@@ -88,6 +86,11 @@ public class OPT extends PagingAlgorithm {
 
         return frame;
 
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
     }
 
 }

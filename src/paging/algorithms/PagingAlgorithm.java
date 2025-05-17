@@ -9,8 +9,8 @@ import java.util.LinkedList;
 
 public abstract class PagingAlgorithm {
 
-    protected final int[] frames;
-    protected final LinkedList<Process> processes;
+    protected int[] frames;
+    protected LinkedList<Process> processes;
 
     protected int finishedProcesses = 0;
 
@@ -105,6 +105,20 @@ public abstract class PagingAlgorithm {
 
     public boolean isFinished() {
         return finishedProcesses == Main.PROCESSES;
+    }
+
+    public void clear() {
+
+        totalPageFaults = 0;
+        totalThrashing = 0;
+        finishedProcesses = 0;
+
+        this.processes = new LinkedList<Process>();
+
+        this.frames = new int[Main.FRAMES];
+        for (int i = 0; i < Main.FRAMES; i++) {
+            frames[i] = -1; // Empty frames are marked by -1
+        }
     }
 
     public int getTotalPageFaults() {

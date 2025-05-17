@@ -1,11 +1,13 @@
 package paging.results;
 
+import paging.Main;
 import paging.algorithms.PagingAlgorithm;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 public class ResultBuilder {
@@ -19,6 +21,11 @@ public class ResultBuilder {
 
     File thrashingReport;
     File pageFaultsReport;
+
+    FileWriter pageFaultsWriter;
+    FileWriter thrashingReportWriter;
+
+    int rowCounter = 0;
 
     public ResultBuilder(PagingAlgorithm ...algorithms) {
         if (algorithms == null || algorithms.length == 0) {
@@ -42,6 +49,19 @@ public class ResultBuilder {
                 thrashingReport.createNewFile();
             }
 
+            pageFaultsWriter = new FileWriter(pageFaultsReport);
+            thrashingReportWriter = new FileWriter(thrashingReport);
+
+            LinkedList<String> elements = new LinkedList<>();
+            elements.add("No.");
+            elements.add("Frames");
+
+            for (PagingAlgorithm algorithm : algorithms) {
+                elements.add(algorithm.getClass().getSimpleName());
+            }
+
+            writeRow(pageFaultsWriter, createRow(elements));
+            writeRow(thrashingReportWriter, createRow(elements));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -51,10 +71,47 @@ public class ResultBuilder {
 
     public void report() {
 
+        LinkedList<String> pageFaults = new LinkedList<>();
+        LinkedList<String> thrashing = new LinkedList<>();
+
+        int number = ++rowCounter;
+
+        pageFaults.add(number + "");
+        pageFaults.add(Main.FRAMES + "");
+
+        thrashing.add(number + "");
+        thrashing.add(Main.FRAMES + "");
+
+        for (PagingAlgorithm algorithm : algorithms) {
+            pageFaults.add(algorithm.getTotalPageFaults() + "");
+            thrashing.add(algorithm.getTotalThrashing() + "");
+        }
+
+        try {
+            writeRow(pageFaultsWriter, createRow(pageFaults));
+            writeRow(thrashingReportWriter, createRow(thrashing));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
-    private void writeRow(String path) {
+    public void finish() throws IOException {
+        pageFaultsWriter.close();
+        thrashingReportWriter.close();
+    }
 
+    private void writeRow(FileWriter writer, String string) throws IOException {
+        writer.write(string + "\n");
+    }
+
+    private String createRow(LinkedList<String> elements) {
+        StringBuilder sb = new StringBuilder();
+        for (String element : elements) {
+            sb.append(element);
+            sb.append(";");
+        }
+        return sb.toString();
     }
 
 }

@@ -9,15 +9,18 @@ public class LRUSimulator implements Simulator {
     LRU algorithm;
 
     private final int seed;
+    private final int programSize;
 
-    public LRUSimulator(int seed) {
+    public LRUSimulator(int seed, int programSize) {
         this.seed = seed;
+        this.programSize = programSize;
         algorithm = new LRU();
     }
 
     @Override
     public void simulate() {
-        algorithm.addProcess(Process.generateProcess(1, 0, 1, 256));
+        algorithm.clear();
+        algorithm.addProcess(Process.generateProcess(1, seed, 1, programSize));
         while (!algorithm.isFinished()) {
             algorithm.step();
         }

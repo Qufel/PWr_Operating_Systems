@@ -16,8 +16,6 @@ public class FIFO extends PagingAlgorithm {
      */
     int candidate;
 
-    int i = 1;
-
     public FIFO() {
         super();
     }
@@ -69,4 +67,11 @@ public class FIFO extends PagingAlgorithm {
     }
 
     //endregion
+
+    @Override
+    public void clear() {
+        super.clear();
+        frameToSwap = 0;
+    }
+
 }

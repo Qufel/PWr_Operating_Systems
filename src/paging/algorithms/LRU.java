@@ -84,4 +84,9 @@ public class LRU extends PagingAlgorithm {
 
     }
 
+    @Override
+    public void clear() {
+        super.clear();
+    }
+
 }

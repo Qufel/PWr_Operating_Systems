@@ -9,14 +9,18 @@ public class SecondChanceSimulator implements Simulator {
     SecondChance algorithm;
     private final int seed;
 
-    public SecondChanceSimulator(int seed) {
+    private final int programSize;
+
+    public SecondChanceSimulator(int seed, int programSize) {
         this.seed = seed;
         algorithm = new SecondChance();
+        this.programSize = programSize;
     }
 
     @Override
     public void simulate() {
-        algorithm.addProcess(Process.generateProcess(1, 0, 1, 256));
+        algorithm.clear();
+        algorithm.addProcess(Process.generateProcess(1, seed, 1, programSize));
         while (!algorithm.isFinished()) {
             algorithm.step();
         }

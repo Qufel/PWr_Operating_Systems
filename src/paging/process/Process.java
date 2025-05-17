@@ -154,6 +154,22 @@ public class Process {
         return new Process(id, pages, sequence);
     }
 
+    public static Process generateCyclicProcess(int id, int firstReference, int lastReference) {
+
+        int[] pages = new int[lastReference - firstReference + 1];
+        int[] sequence = new int[Main.MAX_REFERENCE_COUNT];
+
+        for (int i = 0; i < pages.length; i++) {
+            pages[i] = i + firstReference;
+        }
+
+        for (int i = 0; i < Main.MAX_REFERENCE_COUNT; i++) {
+            sequence[i] = pages[i % pages.length];
+        }
+
+        return new Process(id, pages, sequence);
+    }
+
     private static boolean isLocality(boolean locality, float l, int localityLength, int localities, int i) {
         return ((l < Main.LOCALITY_START_CHANCE || locality) ^ (l < Main.LOCALITY_END_CHANCE && localityLength > Main.MIN_LOCALITY_CHAIN)) && localities < Main.MAX_LOCALITIES && i > Main.LOCALITY_DEPTH;
     }

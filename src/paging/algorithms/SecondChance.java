@@ -88,4 +88,11 @@ public class SecondChance extends  PagingAlgorithm {
         }
     }
 
+    @Override
+    public void clear() {
+        super.clear();
+        victim = 0;
+        referenceBits = new boolean[Main.FRAMES];
+    }
+
 }

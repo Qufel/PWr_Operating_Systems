@@ -7,12 +7,14 @@ import java.util.Random;
 
 public class RAND extends PagingAlgorithm {
 
-    private int seed = 0;
+    private final int originalSeed;
+    private int seed;
 
     int page, candidate;
 
     public RAND(int seed) {
         super();
+        this.originalSeed = seed;
         this.seed = seed;
     }
 
@@ -60,4 +62,9 @@ public class RAND extends PagingAlgorithm {
         return Math.abs(random.nextInt() % Main.FRAMES);
     }
 
+    @Override
+    public void clear() {
+        super.clear();
+        seed = originalSeed;
+    }
 }
