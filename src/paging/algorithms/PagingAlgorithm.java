@@ -74,12 +74,23 @@ public abstract class PagingAlgorithm {
      * Looks for frame which does not have any page assigned to it.
      * @return Frame index. If non found {@code -1}
      */
-    public int getEmptyFrame() {
-        for (int i = 0; i < Main.FRAMES; i++) {
+    public int getEmptyFrame(Process process) {
+        for (int i = process.getFirstAllowedFrame(); i <= process.getLastAllowedFrame(); i++) {
             if (frames[i] == -1)
                 return i;
         }
         return -1;
+    }
+
+    public int getFrameOutOfRange(Process process) {
+        int frame = -1;
+        for (int i = process.getFirstAllowedFrame(); i <= process.getLastAllowedFrame(); i++) {
+            if (!process.containsReference(frames[i])) {
+                frame = i;
+                break;
+            }
+        }
+        return frame;
     }
 
     public boolean isPageInFrames(int page) {
@@ -96,11 +107,20 @@ public abstract class PagingAlgorithm {
         return finishedProcesses;
     }
 
+    /**
+     * Finishes given process and frees its addresses from memory.
+     * @param process
+     */
     protected void finishProcess(Process process) {
         processes.remove(process);
         totalPageFaults += process.getPageFaults();
         totalThrashing += process.getThrashing();
         finishedProcesses++;
+
+        // Free memory
+        for (int i = process.getFirstAllowedFrame(); i <= process.getLastAllowedFrame() ; i++) {
+            frames[i] = -1;
+        }
     }
 
     public boolean isFinished() {
@@ -129,7 +149,7 @@ public abstract class PagingAlgorithm {
         return totalThrashing;
     }
 
-    public String showFrames() {
-        return Arrays.toString(frames);
+    public void showFrames() {
+        System.out.println(Arrays.toString(frames));
     }
 }

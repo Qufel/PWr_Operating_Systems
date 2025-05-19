@@ -52,7 +52,7 @@ public class OPT extends PagingAlgorithm {
     }
 
     public int getNextFrame(Process process) {
-        int frame = getEmptyFrame();
+        int frame = getEmptyFrame(process);
         if (frame != -1) {
             return frame;
         }
@@ -64,7 +64,7 @@ public class OPT extends PagingAlgorithm {
             int index;
             boolean foundNext = false;
 
-            for (int i = 0; process.getIndex() + i < process.getLength(); i++) {
+            for (int i = 0; process.getIndex() + i < process.getSequence().length; i++) {
                 index = process.getIndex() + i;
 
                 if (process.getSequence()[index] == reference) {

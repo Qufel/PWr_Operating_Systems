@@ -1,10 +1,12 @@
 package paging.algorithms;
 
 import paging.Main;
+import paging.frame_allocators.AllocationAlgorithm;
 import paging.process.Process;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.LinkedList;
 
 public class SecondChance extends  PagingAlgorithm {
 
@@ -17,17 +19,37 @@ public class SecondChance extends  PagingAlgorithm {
      */
     int candidate;
 
-    int victim = 0;
     boolean[] referenceBits;
+
+    /**
+     * Queue used to finalize all finished processes to prevent comod shit from happening.
+     */
+    public LinkedList<Process> finalizationQueue = new LinkedList<>();
+
+    AllocationAlgorithm allocation;
 
     public SecondChance() {
         super();
         this.referenceBits = new boolean[Main.FRAMES];
     }
 
+    public void setAllocator(AllocationAlgorithm allocation) {
+        this.allocation = allocation;
+    }
++
     @Override
     public void step() {
+        if (allocation == null) throw new NullPointerException("Allocation algorithm is null");
+
+        allocation.allocateProcesses();
+
         for (Process process : getProcesses()) {
+
+            // Skip suspended processes
+            if (process.isSuspended() || process.isFinished()) {
+                process.pushFaultState(false); // Because process does nothing it's harmful for it that fault state is not updated
+                continue;
+            }
 
             page = process.getNextPage();
 
@@ -54,29 +76,51 @@ public class SecondChance extends  PagingAlgorithm {
             }
 
             if (process.isFinished()) {
-                finishProcess(process);
+                finalizationQueue.add(process);
             }
 
         }
 
+        // Finalize finished processes
+
+        for (Process process : finalizationQueue) {
+            System.out.println("Finished process: \n"  + process);
+            finishProcess(process);
+        }
+
+        finalizationQueue.clear();
+
+        showFrames();
+
     }
 
     public int getNextFrame(Process process) {
-        int frame = getEmptyFrame();
+        int frame = getEmptyFrame(process);
         if (frame != -1) {
             referenceBits[frame] = true;
             return frame;
         }
 
-        while(referenceBits[victim]) {
-            referenceBits[victim] = false;
-            victim = (victim + 1) % Main.FRAMES;
+        frame = getFrameOutOfRange(process);
+        if (frame != -1) {
+            referenceBits[frame] = true;
+            return frame;
         }
 
-        referenceBits[victim] = true;
-        int tmp = victim;
-        victim = (victim + 1) % Main.FRAMES;
-        return tmp;
+        while(referenceBits[process.getVictim()]) {
+            referenceBits[process.getVictim()] = false;
+            if ((process.getLastAllowedFrame() - process.getFirstAllowedFrame() + 1) == 0)
+                System.out.println("fucking piece of shit");
+            process.setVictim((process.getVictim() + 1) % (process.getLastAllowedFrame() - process.getFirstAllowedFrame() + 1) + process.getFirstAllowedFrame());
+        }
+
+        referenceBits[process.getVictim()] = true;
+        frame = process.getVictim();
+        if ((process.getLastAllowedFrame() - process.getFirstAllowedFrame() + 1) == 0)
+            System.out.println("fucking piece of shit");
+        process.setVictim((process.getVictim() + 1) % (process.getLastAllowedFrame() - process.getFirstAllowedFrame() + 1) + process.getFirstAllowedFrame());
+
+        return frame;
     }
 
     private void setReferenceBitFor(int page) {
@@ -91,7 +135,6 @@ public class SecondChance extends  PagingAlgorithm {
     @Override
     public void clear() {
         super.clear();
-        victim = 0;
         referenceBits = new boolean[Main.FRAMES];
     }
 

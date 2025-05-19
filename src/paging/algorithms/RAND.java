@@ -32,7 +32,7 @@ public class RAND extends PagingAlgorithm {
 
                 // Page fault occurs
 
-                candidate = getNextFrame();
+                candidate = getNextFrame(process);
 
                 setPageAtFrame(candidate, page);
 
@@ -52,10 +52,9 @@ public class RAND extends PagingAlgorithm {
         }
     }
 
-    @Override
-    public int getNextFrame() {
+    public int getNextFrame(Process process) {
         int frame;
-        if ((frame = getEmptyFrame()) != -1) {
+        if ((frame = getEmptyFrame(process)) != -1) {
             return frame;
         }
         Random random = new Random(seed++);

@@ -8,6 +8,8 @@ import java.util.Random;
 
 public class Process {
 
+    private boolean suspended;
+
     private final int id;
     private final int[] pages;
     private final int[] sequence;
@@ -32,16 +34,22 @@ public class Process {
      */
     private int sequenceIndex = 0;
 
+    /**
+     * Next victim in Second-Chance Algorithm
+     */
+    private int victim = 0;
+
     private final LinkedList<Boolean> pageFaultsStack;
 
     public Process(int id, int[] pages, int[] sequence) {
         this.id = id;
         this.pages = pages;
         this.sequence = sequence;
+        this.suspended = true;
 
         this.pageFaultsStack = new LinkedList<>();
 
-        this.frameRange = new int[] {0, Main.FRAMES - 1};
+        this.frameRange = new int[] {-1, -1};
     }
 
     public int getId() {
@@ -53,7 +61,7 @@ public class Process {
     }
 
     public int getLength() {
-        return sequence.length;
+        return pages.length;
     }
 
     public boolean isFinished() {
@@ -68,7 +76,30 @@ public class Process {
         return sequence[sequenceIndex++];
     }
 
+    public boolean containsReference(int reference) {
+        for (int page : pages) {
+            if (page == reference)
+                return true;
+        }
+        return false;
+    }
+
     public int getIndex() { return sequenceIndex; }
+
+    public int getVictim() { return victim; }
+
+    public void setVictim(int victim) { this.victim = victim; }
+
+    //region Process Execution Control
+
+    public boolean isSuspended() {
+        return suspended;
+    }
+
+    public void suspend() { this.suspended = true; }
+    public void resume() { this.suspended = false; }
+
+    //endregion
 
     //region Allowed Frames
 
@@ -136,18 +167,21 @@ public class Process {
             if (!localityChange && locality) {
                 localities++;
 
-                localityStart = Math.max(Math.abs(random.nextInt() % (pagesLength)) - Main.LOCALITY_REFERENCES, 0);
-                localityReferences = new int[Main.LOCALITY_REFERENCES];
-                System.arraycopy(pages, localityStart, localityReferences, 0, Main.LOCALITY_REFERENCES);
+                localityStart = Math.abs(random.nextInt()) % (pagesLength);
+                int localityEnd = Math.min(localityStart + ((Math.abs(random.nextInt()) % (pagesLength - localityStart))) + 1, pagesLength);
+
+                // TODO: Some weird shit's going here
+
+                localityReferences = Arrays.copyOfRange(pages, localityStart, localityEnd);
             }
 
             //endregion
 
             // Apply locality effect
             if (locality) {
-                sequence[i] = localityReferences[Math.abs(random.nextInt()) % Main.LOCALITY_REFERENCES];
+                sequence[i] = localityReferences[Math.abs(random.nextInt()) % localityReferences.length];
             } else
-                sequence[i] = random.nextInt( ((id - 1) * Main.REFERENCES_WIDTH + 1), id * Main.REFERENCES_WIDTH + 1 );
+                sequence[i] = random.nextInt(firstReference, lastReference + 1);
 
         }
 

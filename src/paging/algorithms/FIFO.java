@@ -34,7 +34,7 @@ public class FIFO extends PagingAlgorithm {
 
                 // Page fault occurs
 
-                candidate = getNextFrame();
+                candidate = getNextFrame(process);
 
                 setPageAtFrame(candidate, page);
 
@@ -57,9 +57,8 @@ public class FIFO extends PagingAlgorithm {
 
     //region Frame allocation
 
-    @Override
-    public int getNextFrame() {
-        int frame = getEmptyFrame();
+    public int getNextFrame(Process process) {
+        int frame = getEmptyFrame(process);
         if (frame != -1) {
             return frame;
         }

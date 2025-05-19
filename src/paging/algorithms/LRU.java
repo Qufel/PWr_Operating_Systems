@@ -52,7 +52,7 @@ public class LRU extends PagingAlgorithm {
     }
 
     public int getNextFrame(Process process) {
-        int frame = getEmptyFrame();
+        int frame = getEmptyFrame(process);
         if (frame != -1) {
             return frame;
         }
